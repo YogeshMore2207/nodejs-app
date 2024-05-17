@@ -34,5 +34,5 @@ jobs:
           terraform init
           terraform apply -auto-approve -var="docker_image=${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}"
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AKIAWIVDCUIS6HEZNZLR }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.+Ya6X94Y4LReVYuR1OELIEDdxGPpIr1PU7AZQu9Y }}
