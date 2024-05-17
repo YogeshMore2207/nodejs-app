@@ -13,6 +13,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Load environment variables from .env file
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          version: '344.0.0'
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
@@ -28,11 +33,20 @@ jobs:
           docker push ${{ secrets.ECR_REPOSITORY }}:latest
           docker push ${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
 
-      - name: Deploy to ECS
-        run: |
-          cd terraform
-          terraform init
-          terraform apply -auto-approve -var="docker_image=${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}"
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./terraform
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan -var="docker_image=${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}" -var='subnets=["subnet-12345678","subnet-87654321"]' -var="vpc_id=vpc-12345678"
+        working-directory: ./terraform
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
+        working-directory: ./terraform
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AKIAWIVDCUIS6HEZNZLR }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.+Ya6X94Y4LReVYuR1OELIEDdxGPpIr1PU7AZQu9Y }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
