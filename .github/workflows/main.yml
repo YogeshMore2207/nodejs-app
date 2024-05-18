@@ -16,22 +16,38 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
       - name: Log in to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
         with:
-          region: ${{ secrets.us-east-1 }}
-          access-key-id: ${{ secrets.AKIAWIVDCUIS6HEZNZLR }}
-          secret-access-key: ${{ "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" }}
+          region: ${{ secrets.AWS_REGION }}
+          access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Build, tag, and push Docker image to Amazon ECR
         env:
-          ECR_REPOSITORY: ${{ secrets.hello-world-node }}
-          ECR_REGISTRY: ${{ secrets.430912479781 }}.dkr.ecr.${{ secrets.us-east-1 }}.amazonaws.com
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
         run: |
           docker build -t $ECR_REPOSITORY:latest .
           docker tag $ECR_REPOSITORY:latest $ECR_REGISTRY/$ECR_REPOSITORY:latest
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      - name: Build, tag, and push Docker image to Docker Hub
+        env:
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+        run: |
+          docker tag $ECR_REPOSITORY:latest $DOCKER_HUB_USERNAME/myapp:latest
+          docker tag $ECR_REPOSITORY:latest $DOCKER_HUB_USERNAME/myapp:${{ github.sha }}
+          docker push $DOCKER_HUB_USERNAME/myapp:latest
+          docker push $DOCKER_HUB_USERNAME/myapp:${{ github.sha }}
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
@@ -41,8 +57,8 @@ jobs:
         working-directory: ./terraform
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve -var "image_url=${{ secrets.430912479781 }}.dkr.ecr.${{ secrets.us-east-1 }}.amazonaws.com/${{ secrets.hello-world-node }}:latest"
+        run: terraform apply -auto-approve -var "image_url=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:latest"
         working-directory: ./terraform
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AKIAWIVDCUIS6HEZNZLR }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets."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" }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
