@@ -22,7 +22,7 @@ jobs:
         with:
           region: ${{ secrets.us-east-1 }}
           access-key-id: ${{ secrets.AKIAWIVDCUIS6HEZNZLR }}
-          secret-access-key: ${{ secrets."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" }}
+          secret-access-key: ${{ "+Ya6X94Y4LReVYuR1OELIEDdxGPpIr1PU7AZQu9Y" }}
 
       - name: Build, tag, and push Docker image to Amazon ECR
         env:
