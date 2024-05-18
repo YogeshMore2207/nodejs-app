@@ -19,11 +19,17 @@ jobs:
     - name: Log in to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
+      with:
+        registry: 430912479781.dkr.ecr.us-east-1.amazonaws.com
+      env:
+        AWS_REGION: us-east-1
+        AWS_ACCESS_KEY_ID: ${{ secrets.AKIAWIVDCUIS2WGQLMWD }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.no27zM4NU7CPkVjsd+ONa7vtane5NAGevMXnWCET }}
 
     - name: Build, tag, and push Docker image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: hello-world-node
+        ECR_REPOSITORY: hello-world
         IMAGE_TAG: ${{ github.sha }}
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
