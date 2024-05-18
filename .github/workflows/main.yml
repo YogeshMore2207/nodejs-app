@@ -1,53 +1,39 @@
-name: Deploy to ECS
+            - name: ecs-fargate
+  # You may pin to the exact commit or the version.
+  # uses: Dornach/ecs-fargate@915fc6f680ce0b960339f77cfaac53019e8b41cc
+  uses: Dornach/ecs-fargate@v0.2.4
+  with:
+    # Tags
+    tags: 
+    # Service
+    service: 
+    # Cluster
+    cluster: 
+    # Build command
+    build-command: # optional
+    # Delete previous version
+    delete-previous-version: # optional
+    # ecr
+    ecr: 
+    # AWS Access Key ID. This input is required if running in the GitHub hosted environment. It is optional if running in a self-hosted environment that already has AWS credentials, for example on an EC2 instance.
+    aws-access-key-id: # optional
+    # AWS Secret Access Key. This input is required if running in the GitHub hosted environment. It is optional if running in a self-hosted environment that already has AWS credentials, for example on an EC2 instance.
+    aws-secret-access-key: # optional
+    # AWS Session Token
+    aws-session-token: # optional
+    # AWS Region
+    aws-region: 
+    # Whether to set the AWS account ID for these credentials as a secret value, so that it is masked in logs. Valid values are 'true' and 'false'. Defaults to true
+    mask-aws-account-id: # optional
+    # Use the provided credentials to assume an IAM role and configure the Actions environment with the assumed role credentials rather than with the provided credentials
+    role-to-assume: # optional
+    # Role duration in seconds (default: 6 hours)
+    role-duration-seconds: # optional
+    # Role session name (default: GitHubActions)
+    role-session-name: # optional
+    # The external ID of the role to assume
+    role-external-id: # optional
+    # Skip session tagging during role assumption
+    role-skip-session-tagging: # optional
 
-on:
-  push:
-    branches:
-      - main
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
-
-    - name: Log in to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
-      with:
-        registry: 430912479781.dkr.ecr.us-east-1.amazonaws.com
-      env:
-        AWS_REGION: us-east-1
-        AWS_ACCESS_KEY_ID: ${{ secrets.AKIAWIVDCUIS2WGQLMWD }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.no27zM4NU7CPkVjsd+ONa7vtane5NAGevMXnWCET }}
-
-    - name: Build, tag, and push Docker image
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: hello-world
-        IMAGE_TAG: ${{ github.sha }}
-      run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-
-    - name: Download Terraform
-      uses: hashicorp/setup-terraform@v1
-      with:
-        terraform_version: 1.0.11
-
-    - name: Terraform Init
-      run: terraform init
-      working-directory: ./terraform
-
-    - name: Terraform Apply
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_DEFAULT_REGION: us-east-1
-      run: terraform apply -auto-approve -var="docker_image_url=${{ steps.login-ecr.outputs.registry }}/hello-world:${{ github.sha }}"
-      working-directory: ./terraform
+          
