@@ -43,7 +43,7 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-        working-directory: ./terraform/dev
+        working-directory: ./Terraform/dev
 
       - name: Terraform Apply
         env:  # Step-level environment variables
